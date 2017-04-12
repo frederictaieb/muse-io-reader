@@ -8,44 +8,46 @@ class MuseServer(ServerThread):
     #listen for messages on port 5000
     def __init__(self):
         ServerThread.__init__(self, 5000)
+        alpha_score = 0.0
+        beta_score = 0.0
+        relaxed_score = 0.0
+
+    def compute_alpha_score(self, a1, a2, a3, a4):
+        self.alpha_score = (a1+a2+a3+a4)/4
+
+    def compute_beta_score(self, b1, b2, b3, b4):
+        self.beta_score = (b1+b2+b3+b4)/4
+
+    def compute_relaxed_factor(self):
+        self.relaxed_score = (self.alpha_score + self.beta_score)/2
+
+
+    def isRelaxed (self):
+        print "relaxed"
 
     #receive accelrometer data
     @make_method ('/muse/elements/alpha_session_score', 'ffff')
     def alpha_session_score_callback(self, path,args):
         
-        alpha_1 = args[0] 
-        alpha_2 = args[1]
-        alpha_3 = args[2]
-        alpha_4 = args[3]
+        a1 = args[0] 
+        a2 = args[1]
+        a3 = args[2]
+        a4 = args[3]
 
-        alpha_avg = (alpha_1 + alpha_2 + alpha_3 + alpha_4)/4
-
-        print "%s:" %(path)
-        
-        print "1: %f 2:%f 3: %f 4: %f avg: %f" % (
-            alpha_1, alpha_2, alpha_3, alpha_4, alpha_avg
-        )
-
-        #print "%f" %(alpha_avg)
+        self.compute_alpha_score(a1, a2, a3, a4)
+        print "%s: %f (%f %f %f %f)" %(path, self.alpha_score, a1, a2, a3, a4)
 
     @make_method ('/muse/elements/beta_session_score', 'ffff')
     def beta_session_score_callback(self, path,args):
-        
-        beta_1 = args[0] 
-        beta_2 = args[1]
-        beta_3 = args[2]
-        beta_4 = args[3]
 
-        beta_avg = (beta_1 + beta_2 + beta_3 + beta_4)/4
+        b1 = args[0] 
+        b2 = args[1]
+        b3 = args[2]
+        b4 = args[3]
 
-        print "%s:" %(path)
-
-        print "1: %f 2: %f 3: %f 4: %f avg: %f" % (
-            beta_1, beta_2, beta_3, beta_4, beta_avg
-        )
-
-        #print "%f" %(beta_avg)
-
+        self.compute_beta_score(b1, b2, b3, b4)
+        print "%s: %f (%f %f %f %f)" %(path, self.beta_score, b1, b2, b3, b4)
+ 
 try:
     server = MuseServer()
 except ServerError, err:
